@@ -9,8 +9,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,10 +19,10 @@ import frc.robot.RobotMap;
 public class DriveSubsystem extends SubsystemBase {
   /** Creates a new DrivetrainSubsystem. */
 
-  private static final WPI_TalonFX leftFrontMotor = RobotMap.leftFrontMotor;
-  private static final WPI_TalonFX rightFrontMotor = RobotMap.rightFrontMotor;
-  private static final WPI_TalonFX rightBackMotor = RobotMap.rightBackMotor;
-  private static final WPI_TalonFX leftBackMotor = RobotMap.leftBackMotor;
+  private static final WPI_TalonSRX leftFrontMotor = RobotMap.leftFrontMotor;
+  private static final WPI_TalonSRX rightFrontMotor = RobotMap.rightFrontMotor;
+  private static final WPI_TalonSRX rightBackMotor = RobotMap.rightBackMotor;
+  private static final WPI_TalonSRX leftBackMotor = RobotMap.leftBackMotor;
   
   private static XboxController driverController = Robot.m_robotContainer.driverController;
 
@@ -41,21 +40,32 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final int timeoutMs = 10;
 
-  private final PigeonIMU imu = RobotMap.drive_imu;
-
   public boolean state_flag_motion_profile = true;
+
   public DriveSubsystem() {
-    leftFrontMotor.setNeutralMode(NeutralMode.Coast);
+
+    resetEncoders();
+
+    leftFrontMotor.set(ControlMode.Follower, leftBackMotor.getDeviceID());
+    rightFrontMotor.set(ControlMode.Follower, rightBackMotor.getDeviceID());
+
+    leftBackMotor.setNeutralMode(NeutralMode.Coast);
+    rightBackMotor.setNeutralMode(NeutralMode.Coast);
+
+    leftBackMotor.setInverted(false);//false
+    leftFrontMotor.setInverted(false);//false
+    rightBackMotor.setInverted(true); //true 
+    rightFrontMotor.setInverted(true); //true
+
+    /*leftFrontMotor.setNeutralMode(NeutralMode.Coast);
     rightFrontMotor.setNeutralMode(NeutralMode.Coast);
     leftBackMotor.setNeutralMode(NeutralMode.Coast);
     rightBackMotor.setNeutralMode(NeutralMode.Coast);
 
-    leftFrontMotor.setInverted(false);
-    rightFrontMotor.setInverted(true);
-    leftBackMotor.setInverted(false);
-    rightBackMotor.setInverted(true);
-
-    resetEncoders();
+    leftFrontMotor.setInverted(false); //true
+    rightFrontMotor.setInverted(false); //false
+    leftBackMotor.setInverted(false); //true
+    rightBackMotor.setInverted(true); //false*/
 
     leftFrontMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 1);
     leftFrontMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor);
@@ -81,7 +91,7 @@ public class DriveSubsystem extends SubsystemBase {
     rightBackMotor.configVelocityMeasurementWindow(16);
     rightBackMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_12_Feedback1, 5, 10);
 
-    leftFrontMotor.configNominalOutputForward(0, timeoutMs);
+    /*leftFrontMotor.configNominalOutputForward(0, timeoutMs);
     leftFrontMotor.configNominalOutputReverse(0, timeoutMs);
     leftFrontMotor.configPeakOutputForward(1, timeoutMs);
     leftFrontMotor.configPeakOutputReverse(-1, timeoutMs);
@@ -104,35 +114,15 @@ public class DriveSubsystem extends SubsystemBase {
     leftFrontMotor.setSensorPhase(true);
     rightFrontMotor.setSensorPhase(false);
     leftBackMotor.setSensorPhase(true);
-    rightBackMotor.setSensorPhase(false);
+    rightBackMotor.setSensorPhase(false);*/
 
-    leftFrontMotor.setInverted(false);
-    leftFrontMotor.setInverted(true);
-    rightBackMotor.setInverted(true);
-    rightBackMotor.setInverted(false);
-  }
-
-  public double getYaw() {
-    double[] ypr = new double[3];
-    imu.getYawPitchRoll(ypr);
-    return ypr[0];
-  }
-
-  public double getPitch() {
-    double[] ypr = new double[3];
-    imu.getYawPitchRoll(ypr);
-    return ypr[0];
-  }
-
-  public double getRoll() {
-    double[] ypr = new double[3];
-    imu.getYawPitchRoll(ypr);
-    return ypr[0];
-  }
-
-  public void ZeroYaw() {
-    imu.setYaw(0, timeoutMs);
-    imu.setFusedHeading(0, timeoutMs);
+    /*leftFrontMotor.setSelectedSensorPosition(0);
+    leftBackMotor.setSelectedSensorPosition(0);
+    rightFrontMotor.setSelectedSensorPosition(0);
+    rightBackMotor.setSelectedSensorPosition(0);*/
+      
+    /*leftFrontMotor.set(ControlMode.Follower, leftFrontMotor.getDeviceID());
+    rightFrontMotor.set(ControlMode.Follower, rightBackMotor.getDeviceID());*/
   }
 
   @Override
@@ -144,15 +134,12 @@ public class DriveSubsystem extends SubsystemBase {
     rightFrontMotor.set(ControlMode.PercentOutput, 0);
     leftBackMotor.set(ControlMode.PercentOutput, 0);
     rightBackMotor.set(ControlMode.PercentOutput, 0);
-
-    leftBackMotor.set(ControlMode.Follower, leftFrontMotor.getDeviceID());
-    rightBackMotor.set(ControlMode.Follower, rightBackMotor.getDeviceID());
   }
 
   public static void drive(double throttle, double rotate) {
-    leftFrontMotor.set(throttle + rotate);
-    rightFrontMotor.set(throttle - rotate);
-    leftBackMotor.set(throttle + rotate);
+    /*leftBackMotor.set(throttle - rotate); 
+    rightBackMotor.set(throttle + rotate);*/
+    leftBackMotor.set(throttle + rotate); 
     rightBackMotor.set(throttle - rotate);
   }
 

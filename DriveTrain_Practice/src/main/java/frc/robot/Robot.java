@@ -31,7 +31,6 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     m_robotContainer.driveSubsystem.setModePercentVoltage();
     m_robotContainer.driveSubsystem.resetEncoders();
-    m_robotContainer.driveSubsystem.ZeroYaw();
   }
 
   /**

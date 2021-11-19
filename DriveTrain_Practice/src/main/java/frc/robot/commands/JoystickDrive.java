@@ -32,27 +32,29 @@ public class JoystickDrive extends CommandBase {
     double throttle = drivercontroller.getY(Hand.kLeft);
     double rotate = drivercontroller.getX(Hand.kRight);
 
-    if ((throttle > 0 && throttle <0.25) || (throttle < 0 && throttle > -0.25)) {
+    if ((throttle > 0 && throttle < 0.25) || (throttle < 0 && throttle > -0.25)) {
       throttle = 0;
+    } else if (throttle < -0.25) {
+      throttle = -0.3;
     } else {
-      throttle = throttle;
+      throttle = 0.3;
     }
 
     if ((rotate > 0 && rotate <0.25) || (rotate < 0 && rotate > -0.25)) {
       rotate = 0;
+    } else if (rotate > 0.25) {
+      rotate = 0.2;
     } else {
-      rotate = rotate;
+      rotate = -0.2;
     }
-
-    rotate = 2*rotate;
-    
-    if(drivercontroller.getTriggerAxis(Hand.kRight) > 0.25) {
+ 
+  /*  if(drivercontroller.getTriggerAxis(Hand.kRight) > 0.25) {
       throttle = Math.signum(throttle) * 0.75;
     } else if (drivercontroller.getAButton()) {
       throttle = throttle*1.1;
     } else {
       throttle = throttle*0.8;
-    }
+    } */
 
     driveSubsystem.drive(throttle, rotate);
   }
